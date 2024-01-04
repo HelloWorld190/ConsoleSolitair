@@ -1,4 +1,4 @@
-package ConsoleSolitair;
+package com.ConsoleSolitair.Code;
 class Card {
     public String rank;
     public Suit suit;

@@ -1,4 +1,4 @@
-package ConsoleSolitair;
+package com.ConsoleSolitair.Code;
 enum Suit{
     Spade,
     Club,
