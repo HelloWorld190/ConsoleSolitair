@@ -1,33 +1,30 @@
 package com.ConsoleSolitair.Code;
-import com.ConsoleSolitair.Code.Card;
-import com.ConsoleSolitair.Code.Suit;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.ArrayList;
 class GameManager {
     static ArrayList<Card> deck = new ArrayList<Card>(Arrays.asList(
-        new Card("2",Suit.Spade),new Card("3",Suit.Spade),new Card("4",Suit.Spade),
-        new Card("5",Suit.Spade),new Card("6",Suit.Spade),new Card("7",Suit.Spade),
-        new Card("8",Suit.Spade),new Card("9",Suit.Spade),new Card("10",Suit.Spade),
-        new Card("J",Suit.Spade),new Card("Q",Suit.Spade),new Card("K",Suit.Spade),
-        new Card("A",Suit.Spade),
-        new Card("2",Suit.Club),new Card("3",Suit.Club),new Card("4",Suit.Club),
-        new Card("5",Suit.Club),new Card("6",Suit.Club),new Card("7",Suit.Club),
-        new Card("8",Suit.Club),new Card("9",Suit.Club),new Card("10",Suit.Club),
-        new Card("J",Suit.Club),new Card("Q",Suit.Club),new Card("K",Suit.Club),
-        new Card("A",Suit.Club),
-        new Card("2",Suit.Heart),new Card("3",Suit.Heart),new Card("4",Suit.Heart),
-        new Card("5",Suit.Heart),new Card("6",Suit.Heart),new Card("7",Suit.Heart),
-        new Card("8",Suit.Heart),new Card("9",Suit.Heart),new Card("10",Suit.Heart),
-        new Card("J",Suit.Heart),new Card("Q",Suit.Heart),new Card("K",Suit.Heart),
-        new Card("A",Suit.Heart),
-        new Card("2",Suit.Diamond),new Card("3",Suit.Diamond),new Card("4",Suit.Diamond),
-        new Card("5",Suit.Diamond),new Card("6",Suit.Diamond),new Card("7",Suit.Diamond),
-        new Card("8",Suit.Diamond),new Card("9",Suit.Diamond),new Card("10",Suit.Diamond),
-        new Card("J",Suit.Diamond),new Card("Q",Suit.Diamond),new Card("K",Suit.Diamond),
-        new Card("A",Suit.Diamond)
+        new Card(Rank.Two,Suit.Spade),new Card(Rank.Three,Suit.Spade),new Card(Rank.Four,Suit.Spade),
+        new Card(Rank.Five,Suit.Spade),new Card(Rank.Six,Suit.Spade),new Card(Rank.Seven,Suit.Spade),
+        new Card(Rank.Eight,Suit.Spade),new Card(Rank.Nine,Suit.Spade),new Card(Rank.Ten,Suit.Spade),
+        new Card(Rank.Jack,Suit.Spade),new Card(Rank.Queen,Suit.Spade),new Card(Rank.King,Suit.Spade),
+        new Card(Rank.Ace,Suit.Spade),
+        new Card(Rank.Two,Suit.Club),new Card(Rank.Three,Suit.Club),new Card(Rank.Four,Suit.Club),
+        new Card(Rank.Five,Suit.Club),new Card(Rank.Six,Suit.Club),new Card(Rank.Seven,Suit.Club),
+        new Card(Rank.Eight,Suit.Club),new Card(Rank.Nine,Suit.Club),new Card(Rank.Ten,Suit.Club),
+        new Card(Rank.Jack,Suit.Club),new Card(Rank.Queen,Suit.Club),new Card(Rank.King,Suit.Club),
+        new Card(Rank.Ace,Suit.Club),
+        new Card(Rank.Two,Suit.Heart),new Card(Rank.Three,Suit.Heart),new Card(Rank.Four,Suit.Heart),
+        new Card(Rank.Five,Suit.Heart),new Card(Rank.Six,Suit.Heart),new Card(Rank.Seven,Suit.Heart),
+        new Card(Rank.Eight,Suit.Heart),new Card(Rank.Nine,Suit.Heart),new Card(Rank.Ten,Suit.Heart),
+        new Card(Rank.Jack,Suit.Heart),new Card(Rank.Queen,Suit.Heart),new Card(Rank.King,Suit.Heart),
+        new Card(Rank.Ace,Suit.Heart),
+        new Card(Rank.Two,Suit.Diamond),new Card(Rank.Three,Suit.Diamond),new Card(Rank.Four,Suit.Diamond),
+        new Card(Rank.Five,Suit.Diamond),new Card(Rank.Six,Suit.Diamond),new Card(Rank.Seven,Suit.Diamond),
+        new Card(Rank.Eight,Suit.Diamond),new Card(Rank.Nine,Suit.Diamond),new Card(Rank.Ten,Suit.Diamond),
+        new Card(Rank.Jack,Suit.Diamond),new Card(Rank.Queen,Suit.Diamond),new Card(Rank.King,Suit.Diamond),
+        new Card(Rank.Ace,Suit.Diamond)
     ));
     public static ArrayList<Card> stack0 = new ArrayList<Card>();
     public static ArrayList<Card> stack1 = new ArrayList<Card>();
@@ -40,11 +37,12 @@ class GameManager {
     public static void dealCards() {
         for (int i = 0; i < 6; i++) {
             deck.get(0).isFaceUp = true;
-            for (int j = 6; j-i<0; j--) {
+            for (int j = 6; j-i>0; j--) {
                 stacks[i].add(deck.get(0));
                 deck.remove(0);
             }
         }
+        pile = deck;
     }
     public static void main(String[] args) {
         Collections.shuffle(deck);
@@ -52,6 +50,7 @@ class GameManager {
             System.out.println(deck.get(i).rank);
         }
         TextManager.initialize();
+        dealCards();
         TextManager.printStacks(stacks);
     }
 }

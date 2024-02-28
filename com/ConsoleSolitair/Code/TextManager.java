@@ -16,6 +16,7 @@ class TextManager {
     public static String[] hearts = new String[7];
     public static String[] diamonds = new String[7];
     public static String[] emptyCard = new String[7];
+    public static String[] hiddenCard = new String[7];
 
     public static void initialize() {
         Scanner scanner1 = null;
@@ -47,6 +48,10 @@ class TextManager {
             for (int j = 0; j < Card.height; j++) {
                 emptyCard[j] = scanner2.nextLine();
             }
+            scanner2.nextLine();
+            for (int j = 0; j < Card.height; j++) {
+                hiddenCard[j] = scanner2.nextLine();
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -68,13 +73,55 @@ class TextManager {
 
     public static void printStacks(ArrayList<Card>[] stacks) {
         for (int i = 0; i < 6; i++) {
-            ArrayList<Card> currentStack = GameManager.stacks[i];
+            ArrayList<Card> currentStack = stacks[i];
             if (currentStack.size() == 0) {
                 for (int j = 0; j < Card.height; j++) {
                     board[j] = 
                     board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
                     +emptyCard[j]+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                     board[j].length());
+                }
+            } else {
+                for (int j = 0; j < currentStack.size(); j++) {
+                    if (currentStack.get(j).isFaceUp) {
+                        for (int k = 0; k < Card.height; k++) {
+                            int CARD_START = k + i*2;
+                            switch (currentStack.get(j).suit) {
+                                case Spade:
+                                    board[CARD_START] = 
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                                    +spades[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].length());
+                                    break;
+                                case Club:
+                                    board[CARD_START] = 
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                                    +clubs[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].length());
+                                    break;
+                                case Heart:
+                                    board[CARD_START] = 
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                                    +hearts[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].length());
+                                    break;
+                                case Diamond:
+                                    board[CARD_START] = 
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                                    +diamonds[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].length());
+                                    break;
+                            }
+                        }
+                    } else {
+                        for (int k = 0; k < Card.height; k++) {
+                            int CARD_START = k + i*2;
+                            board[CARD_START] = 
+                            board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                            +hiddenCard[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                            board[CARD_START].length());
+                        }
+                    }
                 }
             }
         }
