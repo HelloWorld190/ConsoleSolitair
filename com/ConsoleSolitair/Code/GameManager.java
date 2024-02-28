@@ -2,10 +2,12 @@ package com.ConsoleSolitair.Code;
 import com.ConsoleSolitair.Code.Card;
 import com.ConsoleSolitair.Code.Suit;
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.list;
+import java.util.List;
+import java.util.ArrayList;
 class GameManager {
-    Card[] cards = {
+    static ArrayList<Card> deck = new ArrayList<Card>(Arrays.asList(
         new Card("2",Suit.Spade),new Card("3",Suit.Spade),new Card("4",Suit.Spade),
         new Card("5",Suit.Spade),new Card("6",Suit.Spade),new Card("7",Suit.Spade),
         new Card("8",Suit.Spade),new Card("9",Suit.Spade),new Card("10",Suit.Spade),
@@ -26,9 +28,30 @@ class GameManager {
         new Card("8",Suit.Diamond),new Card("9",Suit.Diamond),new Card("10",Suit.Diamond),
         new Card("J",Suit.Diamond),new Card("Q",Suit.Diamond),new Card("K",Suit.Diamond),
         new Card("A",Suit.Diamond)
-    };
+    ));
+    public static ArrayList<Card> stack0 = new ArrayList<Card>();
+    public static ArrayList<Card> stack1 = new ArrayList<Card>();
+    public static ArrayList<Card> stack2 = new ArrayList<Card>();
+    public static ArrayList<Card> stack3 = new ArrayList<Card>();
+    public static ArrayList<Card> stack4 = new ArrayList<Card>();
+    public static ArrayList<Card> stack5 = new ArrayList<Card>();
+    public static ArrayList<Card> pile = new ArrayList<Card>();
+    public static ArrayList<Card>[] stacks = new ArrayList[]{stack0,stack1,stack2,stack3,stack4,stack5};
+    public static void dealCards() {
+        for (int i = 0; i < 6; i++) {
+            deck.get(0).isFaceUp = true;
+            for (int j = 6; j-i<0; j--) {
+                stacks[i].add(deck.get(0));
+                deck.remove(0);
+            }
+        }
+    }
     public static void main(String[] args) {
-        cards = list.toArray(Collection.shuffle(Arrays.asList(card)));
-        System.out.println(cards[i].rank);
+        Collections.shuffle(deck);
+        for (int i = 0; i < deck.size(); i++) {
+            System.out.println(deck.get(i).rank);
+        }
+        TextManager.initialize();
+        TextManager.printStacks(stacks);
     }
 }
