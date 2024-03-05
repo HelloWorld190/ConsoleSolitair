@@ -11,12 +11,12 @@ class TextManager {
     private static final int STACK_SPACE = 2;
 
     public static String[] board = new String[27];
-    public static String[] spades = new String[7];
-    public static String[] clubs = new String[7];
-    public static String[] hearts = new String[7];
-    public static String[] diamonds = new String[7];
-    public static String[] emptyCard = new String[7];
-    public static String[] hiddenCard = new String[7];
+    public static String[] spades = new String[6];
+    public static String[] clubs = new String[6];
+    public static String[] hearts = new String[6];
+    public static String[] diamonds = new String[6];
+    public static String[] emptyCard = new String[6];
+    public static String[] hiddenCard = new String[6];
 
     public static void initialize() {
         Scanner scanner1 = null;
@@ -83,39 +83,40 @@ class TextManager {
                 }
             } else {
                 for (int j = 0; j < currentStack.size(); j++) {
+                    String[] design = getDesign(currentStack.get(j));
                     if (currentStack.get(j).isFaceUp) {
                         for (int k = 0; k < Card.height; k++) {
-                            int CARD_START = k + i*2;
+                            int CARD_START = k + j*2;  
                             switch (currentStack.get(j).suit) {
                                 case Spade:
                                     board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-                                    +spades[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
                                 case Club:
                                     board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-                                    +clubs[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
                                 case Heart:
                                     board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-                                    +hearts[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
                                 case Diamond:
                                     board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-                                    +diamonds[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
                             }
                         }
                     } else {
                         for (int k = 0; k < Card.height; k++) {
-                            int CARD_START = k + i*2;
+                            int CARD_START = k + j*2;
                             board[CARD_START] = 
                             board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
                             +hiddenCard[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
@@ -126,5 +127,30 @@ class TextManager {
             }
         }
         printBoard();
+    }
+
+    private static String[] getDesign(Card card) {
+        String[] returnee = new String[6];
+        String[] suitDesign = new String[6];
+        switch (card.suit) {
+            case Spade:
+                suitDesign = spades;
+                break;
+            case Club:
+                suitDesign = clubs;
+                break;
+            case Heart:
+                suitDesign = hearts;
+                break;
+            case Diamond:
+                suitDesign = diamonds;
+                break;
+        }
+        int ordinal = card.rank.ordinal();
+        for (int line = 0; line < Card.height; line++) {
+            returnee[line] = suitDesign[line].substring(ordinal*(Card.width+STACK_SPACE)
+                ,ordinal*(Card.width+STACK_SPACE)+Card.width);
+        }
+        return returnee;
     }
 }
