@@ -1,6 +1,7 @@
 package com.ConsoleSolitair.Code;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.io.FileNotFoundException;
 
@@ -71,7 +72,7 @@ class TextManager {
         }
     }
 
-    public static void printStacks(ArrayList<Card>[] stacks) {
+    public static void loadAllStacks(ArrayList<Card>[] stacks) {
         for (int i = 0; i < 6; i++) {
             ArrayList<Card> currentStack = stacks[i];
             if (currentStack.size() == 0) {
@@ -126,9 +127,62 @@ class TextManager {
                 }
             }
         }
-        printBoard();
     }
 
+    public static void loadSingleStack(ArrayList<Card> stack) {
+        int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
+        if (stack.size() == 0) {
+            for (int j = 0; j < Card.height; j++) {
+                board[j] = 
+                board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                +emptyCard[j]+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                board[j].length());
+            }
+        } else {
+            for (int j = 0; j < stack.size(); j++) {
+                String[] design = getDesign(stack.get(j));
+                if (stack.get(j).isFaceUp) {
+                    for (int k = 0; k < Card.height; k++) {
+                        int CARD_START = k + j*2;  
+                        switch (stack.get(j).suit) {
+                            case Spade:
+                                board[CARD_START] = 
+                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                board[CARD_START].length());
+                                break;
+                            case Club:
+                                board[CARD_START] = 
+                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                board[CARD_START].length());
+                                break;
+                            case Heart:
+                                board[CARD_START] = 
+                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                board[CARD_START].length());
+                                break;
+                            case Diamond:
+                                board[CARD_START] = 
+                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                                board[CARD_START].length());
+                                break;
+                        }
+                    }
+                } else {
+                    for (int k = 0; k < Card.height; k++) {
+                        int CARD_START = k + j*2;
+                        board[CARD_START] = 
+                        board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                        +hiddenCard[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                        board[CARD_START].length());
+                    }
+                }
+            }
+        }
+    }
     private static String[] getDesign(Card card) {
         String[] returnee = new String[6];
         String[] suitDesign = new String[6];
