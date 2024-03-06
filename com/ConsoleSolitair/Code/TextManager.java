@@ -6,13 +6,12 @@ import java.util.Scanner;
 import java.io.FileNotFoundException;
 
 class TextManager {
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_WHITE = "\u001B[37m";
+    // private static final String ANSI_RED = "\u001B[31m";
+    // private static final String ANSI_WHITE = "\u001B[37m";
     private static final int STACK_START = 13;
     private static final int STACK_SPACE = 2;
-    private static final int ACE_SPACE = 1;
 
-    public static String[] board = new String[27];
+    public static String[] board = new String[24];
     public static String[] spades = new String[6];
     public static String[] clubs = new String[6];
     public static String[] hearts = new String[6];
@@ -191,8 +190,8 @@ class TextManager {
             else {
                 String[] design = getDesign(new Card(GameManager.acePiles[i],Suit.values()[i]));
                 for (int j = 0; j < Card.height; j++) {
-                    board[(Card.height+ACE_SPACE)*i+j] = design[j] +
-                        board[(Card.height+ACE_SPACE)*i+j].substring(Card.width);
+                    board[Card.height*i+j] = design[j] +
+                        board[Card.height*i+j].substring(Card.width);
                 }
             }
         }

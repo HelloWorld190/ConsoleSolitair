@@ -40,16 +40,18 @@ class GameManager {
 
     public static boolean gameOver = false;
     public enum Input {
-        DRAW, MOVE, MOVE_ALL
+        DRAWING, MOVING, MOVING_ALL
     }
     public static class PlayerMove {
         public Input type; 
         public String loc;
         public String dest;
+        public Card card;
         public PlayerMove(Input type, String loc, String dest) {
             this.type = type; this.loc = loc; this.dest = dest;}
         public String toString() {
-            return "Type: " + type.name() + " Location: " + loc + " Destination: " + dest;
+            return type.name()+" "+((type==Input.DRAWING)? "a card" :
+                card.rank.name() + " of "+card.suit.name()+" to "+dest+" stack");
         }
     }
     public static void dealCards() {
@@ -66,16 +68,16 @@ class GameManager {
     public static PlayerMove userInput() throws Exception {
         Scanner scanner = new Scanner(System.in);
         String userInput = scanner.nextLine(); 
-        if (userInput.contains("draw") || userInput.contains("d") || userInput.equals("")) {
-            return new PlayerMove(Input.DRAW, null, null);
+        if (userInput.contains("draw") || userInput.equals("")) {
+            return new PlayerMove(Input.DRAWING, null, null);
         } else if (userInput.contains("move") || userInput.contains("m")) {
             userInput=userInput.substring((userInput.contains("move"))? 4 : 1);
             if (userInput.contains("to")) {
                 String[] split = userInput.split("to");
-                return new PlayerMove(Input.MOVE, split[0].trim(), split[1].trim());
+                return new PlayerMove(Input.MOVING, split[0].trim(), split[1].trim());
             } else if (userInput.contains("-")) {
                 String[] split = userInput.split("-");
-                return new PlayerMove(Input.MOVE, split[0].trim(), split[1].trim());
+                return new PlayerMove(Input.MOVING, split[0].trim(), split[1].trim());
             } else {
                 throw new Exception("Invalid input, please try again");
             }
@@ -83,10 +85,10 @@ class GameManager {
             userInput=userInput.substring((userInput.contains("move all"))? 8 : 2);
             if (userInput.contains("to")) {
                 String[] split = userInput.split("to");
-                return new PlayerMove(Input.MOVE_ALL, split[0].trim(), split[1].trim());
+                return new PlayerMove(Input.MOVING_ALL, split[0].trim(), split[1].trim());
             } else if (userInput.contains("-")) {
                 String[] split = userInput.split("-");
-                return new PlayerMove(Input.MOVE_ALL, split[0].trim(), split[1].trim());
+                return new PlayerMove(Input.MOVING_ALL, split[0].trim(), split[1].trim());
             } else {
                 throw new Exception("Invalid input, please try again");
             }
@@ -134,6 +136,7 @@ class GameManager {
             if (acePiles[pile] == null) {
                 if (sameCard(loc.get(loc.size()-1),new Card(Rank.Ace,Suit.values()[pile]))) {
                     acePiles[pile] = loc.get(loc.size()-1).rank;
+                    move.card = loc.get(loc.size()-1);
                     loc.remove(loc.size()-1);
                 } else {
                     throw new Exception("Invalid input - cannot start a pile with "+
@@ -146,6 +149,7 @@ class GameManager {
                 Rank rankNeeded = Rank.values()[acePiles[pile].ordinal()+1];
                 if (sameCard(loc.get(loc.size()-1),new Card(rankNeeded,Suit.values()[pile]))) {
                     acePiles[pile] = loc.get(loc.size()-1).rank;
+                    move.card = loc.get(loc.size()-1);
                     loc.remove(loc.size()-1);
                 } else {
                     throw new Exception("Invalid input - cannot add to "+move.dest
@@ -156,6 +160,7 @@ class GameManager {
         } else if (dest.size() == 0) {
             if (loc.get(loc.size()-1).rank == Rank.King) {
                 dest.add(loc.get(loc.size()-1));
+                move.card = loc.get(loc.size()-1);
                 loc.remove(loc.size()-1);
             } else {
                 throw new Exception("Invalid input - cannot start a pile with "+
@@ -176,6 +181,7 @@ class GameManager {
                         case DIAMONDS:
                             if (loc.get(loc.size()-1).rank.ordinal() == dest.get(dest.size()-1).rank.ordinal()-1) {
                                 dest.add(loc.get(loc.size()-1));
+                                move.card = loc.get(loc.size()-1);
                                 loc.remove(loc.size()-1);
                             } else {
                                 throw new Exception("Invalid input - cannot move "
@@ -198,6 +204,7 @@ class GameManager {
                         case CLUBS:
                             if (loc.get(loc.size()-1).rank.ordinal() == dest.get(dest.size()-1).rank.ordinal()-1) {
                                 dest.add(loc.get(loc.size()-1));
+                                move.card = loc.get(loc.size()-1);
                                 loc.remove(loc.size()-1);
                             } else {
                                 throw new Exception("Invalid input - cannot move "
@@ -224,12 +231,13 @@ class GameManager {
         dealCards();
         TextManager.loadAllStacks(stacks);
         TextManager.printBoard();
+        PlayerMove move = null;
         while (true){
-            PlayerMove move = null;
+            move = null;
             try {move = userInput(); 
-                if (move.type == Input.DRAW) {draw(); 
+                if (move.type == Input.DRAWING) {draw(); 
                 TextManager.loadSingleStack(discard); TextManager.printBoard();}
-                else if (move.type == Input.MOVE) {move(move); 
+                else if (move.type == Input.MOVING) {move(move); 
                     if (move.loc.equals("discard") || move.loc.equals("d")) {
                         TextManager.loadSingleStack(discard);
                     } else {
@@ -244,6 +252,7 @@ class GameManager {
                     }
                     TextManager.printBoard();
                 }
+                System.out.println(move.toString());
             }
             catch (Exception e) {e.printStackTrace();}
         
