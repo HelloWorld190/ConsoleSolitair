@@ -10,6 +10,7 @@ class TextManager {
     private static final String ANSI_WHITE = "\u001B[37m";
     private static final int STACK_START = 13;
     private static final int STACK_SPACE = 2;
+    private static final int ACE_SPACE = 1;
 
     public static String[] board = new String[27];
     public static String[] spades = new String[6];
@@ -89,25 +90,25 @@ class TextManager {
                         for (int k = 0; k < Card.height; k++) {
                             int CARD_START = k + j*2;  
                             switch (currentStack.get(j).suit) {
-                                case Spade:
+                                case SPADES:
                                     board[CARD_START] = 
                                     board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                     design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
-                                case Club:
+                                case CLUBS:
                                     board[CARD_START] = 
                                     board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                     design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
-                                case Heart:
+                                case HEARTS:
                                     board[CARD_START] = 
                                     board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                     design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                     board[CARD_START].length());
                                     break;
-                                case Diamond:
+                                case DIAMONDS:
                                     board[CARD_START] = 
                                     board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                     design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
@@ -131,6 +132,7 @@ class TextManager {
 
     public static void loadSingleStack(ArrayList<Card> stack) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
+        stack = (i==7&&stack.size()>3)?new ArrayList<Card>(stack.subList(stack.size()-4, stack.size()-1)):stack;
         if (stack.size() == 0) {
             for (int j = 0; j < Card.height; j++) {
                 board[j] = 
@@ -145,25 +147,25 @@ class TextManager {
                     for (int k = 0; k < Card.height; k++) {
                         int CARD_START = k + j*2;  
                         switch (stack.get(j).suit) {
-                            case Spade:
+                            case SPADES:
                                 board[CARD_START] = 
                                 board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                 design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                 board[CARD_START].length());
                                 break;
-                            case Club:
+                            case CLUBS:
                                 board[CARD_START] = 
                                 board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                 design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                 board[CARD_START].length());
                                 break;
-                            case Heart:
+                            case HEARTS:
                                 board[CARD_START] = 
                                 board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                 design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
                                 board[CARD_START].length());
                                 break;
-                            case Diamond:
+                            case DIAMONDS:
                                 board[CARD_START] = 
                                 board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
                                 design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
@@ -183,20 +185,42 @@ class TextManager {
             }
         }
     }
+    public static void loadAcesStack() {
+        for (int i = 0; i < GameManager.acePiles.length; i++) {
+            if (GameManager.acePiles[i]==null) {continue;}
+            else {
+                String[] design = getDesign(new Card(GameManager.acePiles[i],Suit.values()[i]));
+                for (int j = 0; j < Card.height; j++) {
+                    board[(Card.height+ACE_SPACE)*i+j] = design[j] +
+                        board[(Card.height+ACE_SPACE)*i+j].substring(Card.width);
+                }
+            }
+        }
+    }
+    public static void cleanStack(ArrayList<Card> stack) {
+        int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
+        for (int k = 0; k < Card.height+10; k++) {
+            int CARD_START = k + (stack.size()-1)*2+Card.height;
+            board[CARD_START] = 
+            board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+            +"       "+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+            board[CARD_START].length());
+        }
+    }
     private static String[] getDesign(Card card) {
         String[] returnee = new String[6];
         String[] suitDesign = new String[6];
         switch (card.suit) {
-            case Spade:
+            case SPADES:
                 suitDesign = spades;
                 break;
-            case Club:
+            case CLUBS:
                 suitDesign = clubs;
                 break;
-            case Heart:
+            case HEARTS:
                 suitDesign = hearts;
                 break;
-            case Diamond:
+            case DIAMONDS:
                 suitDesign = diamonds;
                 break;
         }
