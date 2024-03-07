@@ -43,9 +43,10 @@ class GameManager {
                         TextManager.loadSingleStack(pickUp);
                         TextManager.cleanStack(pickUp);
                     } else {
-                        stacks[Integer.parseInt(move.loc)-1].get(stacks[Integer.parseInt(move.loc)-1].size()-1).isFaceUp = true;
-                        TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
-                        TextManager.cleanStack(stacks[Integer.parseInt(move.loc)-1]);
+                        ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+                        if (loc.size() != 0) loc.get(loc.size()-1).isFaceUp = true;
+                        TextManager.loadSingleStack(loc);
+                        TextManager.cleanStack(loc);
                     }
                     if (move.dest.charAt(0) == 'a') {
                         TextManager.loadAcesStack();
@@ -54,9 +55,10 @@ class GameManager {
                     }
                 } else if (move.type == Input.MOVING_ALL) {
                     moveAll(move);
-                    stacks[Integer.parseInt(move.loc)-1].get(stacks[Integer.parseInt(move.loc)-1].size()-1).isFaceUp = true;
-                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
-                    TextManager.cleanStack(stacks[Integer.parseInt(move.loc)-1]);
+                    ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+                    if (loc.size() !=0) loc.get(loc.size()-1).isFaceUp = true;
+                    TextManager.loadSingleStack(loc);
+                    TextManager.cleanStack(loc);
                     TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
                 } else if (move.type==Input.SHUFFLING) {
                     shuffle();
@@ -118,7 +120,8 @@ class GameManager {
         public String toString() {
             return type.name()+" "+((type==Input.DRAWING)? "a card" : 
             ((type==Input.SHUFFLING)? "the pickup pile" :
-                card.rank.name() + " of "+card.suit.name()+" to stack "+dest));
+                ((type==Input.MOVING_ALL)?"of stack " + loc:
+                card.rank.name() + " of "+card.suit.name())+" to stack "+dest));
         }
     }
     public static void dealCards() {
@@ -287,20 +290,78 @@ class GameManager {
     }
     //TODO: Make sure moveAll checks for the bottom-most face-up card, not the top-most
     public static void moveAll(PlayerMove move) throws Exception {
-        if (move.loc=="d"||move.loc=="discard") {
+        if (move.loc=="p"||move.loc=="pick up") {
             throw new Exception("Invalid input - cannot move all from discard pile, please try again");
+        } else if (move.loc.charAt(0) == 'a' || move.dest.charAt(0) == 'a') {
+            throw new Exception("Invalid input - cannot move all to or from ace pile, please try again");
+        } 
+        ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+        ArrayList<Card> dest = stacks[Integer.parseInt(move.dest)-1];
+        ArrayList<Card> temp = new ArrayList<Card>();
+        for (Card card : loc) {
+            if (card.isFaceUp) {
+                temp.add(card);
+            }
         }
-        try {Integer.parseInt(move.loc); Integer.parseInt(move.dest);}
-        catch (NumberFormatException e) {
-            throw new Exception("Invalid input - cannot move all to/from ace pile, please try again");
+        if (dest.size() == 0) {
+            if (temp.get(0).rank == Rank.King) {
+                dest.addAll(temp);
+                move.card = temp.get(0);
+                loc.removeAll(temp);
+            } else {
+                throw new Exception("Invalid input - cannot start a pile with "+
+                temp.get(0).rank.name()+", please try again");
+            }
+        } else {
+            switch (temp.get(0).suit) {
+                case SPADES:
+                case CLUBS:
+                    switch(dest.get(dest.size()-1).suit) {
+                        case CLUBS:
+                        case SPADES:
+                            throw new Exception("Invalid input - cannot move "
+                            +temp.get(0).rank.name()+" of "+temp.get(0).suit.name()
+                            +" onto "+dest.get(dest.size()-1).rank.name()+ " of " + dest.get(dest.size()-1).suit.name() 
+                            +", please try again");
+                        case HEARTS:
+                        case DIAMONDS:
+                            if (temp.get(0).rank.ordinal() == dest.get(dest.size()-1).rank.ordinal()-1) {
+                                dest.addAll(temp);
+                                move.card = temp.get(0);
+                                loc.removeAll(temp);
+                            } else {
+                                throw new Exception("Invalid input - cannot move "
+                                +temp.get(0).rank.name()+" of "+temp.get(0).suit.name()
+                                +" onto "+dest.get(dest.size()-1).rank.name()+ " of " + dest.get(dest.size()-1).suit.name() 
+                                +", please try again");
+                            }
+                    }
+                    break;
+                case HEARTS:
+                case DIAMONDS:
+                    switch(dest.get(dest.size()-1).suit) {
+                        case HEARTS:
+                        case DIAMONDS:
+                            throw new Exception("Invalid input - cannot move "
+                            +temp.get(0).rank.name()+" of "+temp.get(0).suit.name()
+                            +" onto "+dest.get(dest.size()-1).rank.name()+ " of " + dest.get(dest.size()-1).suit.name() 
+                            +", please try again");
+                        case SPADES:
+                        case CLUBS:
+                            if (temp.get(0).rank.ordinal() == dest.get(dest.size()-1).rank.ordinal()-1) {
+                                dest.addAll(temp);
+                                move.card = temp.get(0);
+                                loc.removeAll(temp);
+                            } else {
+                                throw new Exception("Invalid input - cannot move "
+                                +temp.get(0).suit.name()+" of "+temp.get(0).rank.name()
+                                +" onto "+dest.get(dest.size()-1).suit.name()+ " of " + dest.get(dest.size()-1).rank.name() 
+                                +", please try again");
+                            }
+                    }
+                    break;
+            }
         }
-        move(move); 
-        ArrayList<Card> tempList = new ArrayList<Card>();
-        for (Card card : stacks[Integer.parseInt(move.loc)-1]) {
-            if (card.isFaceUp) {tempList.add(card);}
-        }
-        stacks[Integer.parseInt(move.dest)-1].addAll(tempList);
-        stacks[Integer.parseInt(move.loc)-1].removeAll(tempList);    
     }
 
     public static void shuffle() throws Exception {
