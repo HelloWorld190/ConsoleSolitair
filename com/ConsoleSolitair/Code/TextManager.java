@@ -198,7 +198,9 @@ class TextManager {
     public static void cleanStack(ArrayList<Card> stack) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
         for (int k = 0; k < Card.height; k++) {
-            int CARD_START = k + (stack.size()-1)*2+Card.height ;//- ((i==7&&stack.size()<3)?5:0);
+            int CARD_START = k + ((stack.size()==0)?0:(stack.size()-1)*2)+Card.height;//- ((i==7&&stack.size()<3)?5:0);
+            try {board[CARD_START]=board[CARD_START];}
+            catch (ArrayIndexOutOfBoundsException e) {break;}
             board[CARD_START] = 
             board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
             +"       "+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
@@ -232,6 +234,7 @@ class TextManager {
 
     public static void loadPile(int size) {
         int i=6;
+        size = (size>3)?3:size;
         if (size == 0) {
             for (int j = 0; j < Card.height; j++) {
                 board[j] = 
