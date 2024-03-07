@@ -64,7 +64,6 @@ class GameManager {
         }
         pile = deck;
     }
-    //TODO: Kinda broken, fix it 
     public static PlayerMove userInput() throws Exception {
         Scanner scanner = new Scanner(System.in);
         String userInput = scanner.nextLine(); 
