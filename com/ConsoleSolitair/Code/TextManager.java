@@ -63,7 +63,6 @@ class TextManager {
                 scanner2.close();
             }
         }
-        System.out.println("Welcome to Solitaire!");
     }
 
     public static void printBoard() {
@@ -131,7 +130,7 @@ class TextManager {
 
     public static void loadSingleStack(ArrayList<Card> stack) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
-        stack = (i==7&&stack.size()>3)?new ArrayList<Card>(stack.subList(stack.size()-4, stack.size()-1)):stack;
+        stack = (i==7&&stack.size()>3)?new ArrayList<Card>(stack.subList(stack.size()-3, stack.size())):stack;
         if (stack.size() == 0) {
             for (int j = 0; j < Card.height; j++) {
                 board[j] = 
@@ -198,8 +197,8 @@ class TextManager {
     }
     public static void cleanStack(ArrayList<Card> stack) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
-        for (int k = 0; k < Card.height+10; k++) {
-            int CARD_START = k + (stack.size()-1)*2+Card.height;
+        for (int k = 0; k < Card.height; k++) {
+            int CARD_START = k + (stack.size()-1)*2+Card.height ;//- ((i==7&&stack.size()<3)?5:0);
             board[CARD_START] = 
             board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
             +"       "+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
@@ -229,5 +228,32 @@ class TextManager {
                 ,ordinal*(Card.width+STACK_SPACE)+Card.width);
         }
         return returnee;
+    }
+
+    public static void loadPile(int size) {
+        int i=6;
+        if (size == 0) {
+            for (int j = 0; j < Card.height; j++) {
+                board[j] = 
+                board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                +emptyCard[j]+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                board[j].length());
+            }
+        } else {
+            for (int k = 0; k < Card.height+(size)*2; k++) {
+                board[k] = board[k].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                +"       "+board[k].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                board[k].length());
+            }
+            for (int j = 0; j < size; j++) {
+                for (int k = 0; k < Card.height; k++) {
+                    int CARD_START = k + j*2;  
+                    board[CARD_START] = 
+                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+                    +hiddenCard[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                    board[CARD_START].length());
+                }
+            }
+        }
     }
 }

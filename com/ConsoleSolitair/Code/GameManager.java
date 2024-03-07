@@ -33,7 +33,7 @@ class GameManager {
     public static ArrayList<Card> stack4 = new ArrayList<Card>();
     public static ArrayList<Card> stack5 = new ArrayList<Card>();
     public static ArrayList<Card> pile = new ArrayList<Card>();
-    public static ArrayList<Card> discard = new ArrayList<Card>();
+    public static ArrayList<Card> pickUp = new ArrayList<Card>();
     @SuppressWarnings("unchecked")
     public static ArrayList<Card>[] stacks = new ArrayList[]{stack0,stack1,stack2,stack3,stack4,stack5};
     public static Rank[] acePiles = new Rank[] {null,null,null,null};
@@ -51,7 +51,7 @@ class GameManager {
             this.type = type; this.loc = loc; this.dest = dest;}
         public String toString() {
             return type.name()+" "+((type==Input.DRAWING)? "a card" :
-                card.rank.name() + " of "+card.suit.name()+" to "+dest+" stack");
+                card.rank.name() + " of "+card.suit.name()+" to stack "+dest);
         }
     }
     public static void dealCards() {
@@ -81,8 +81,8 @@ class GameManager {
             } else {
                 throw new Exception("Invalid input, please try again");
             }
-        } else if (userInput.contains("move all") || userInput.contains("ma")) {
-            userInput=userInput.substring((userInput.contains("move all"))? 8 : 2);
+        } else if (userInput.contains("move all") || userInput.contains("a")) {
+            userInput=userInput.substring((userInput.contains("move all"))? 8 : 1);
             if (userInput.contains("to")) {
                 String[] split = userInput.split("to");
                 return new PlayerMove(Input.MOVING_ALL, split[0].trim(), split[1].trim());
@@ -100,8 +100,8 @@ class GameManager {
         if (pile.size() == 0) {
             throw new Exception("No cards left to draw");
         }
-        discard.add(pile.get(pile.size()-1));
-        discard.get(discard.size()-1).isFaceUp = true;
+        pickUp.add(pile.get(pile.size()-1));
+        pickUp.get(pickUp.size()-1).isFaceUp = true;
         pile.remove(pile.size()-1);
     }
     public static void move(PlayerMove move) throws Exception {
@@ -109,8 +109,8 @@ class GameManager {
         boolean isAcePile = false;
         try {loc = stacks[Integer.parseInt(move.loc)-1];}
         catch (NumberFormatException e) {
-            if (move.loc.equals("discard") || move.loc.equals("d")) {
-                loc = discard;
+            if (move.loc.equals("pick up") || move.loc.equals("p")) {
+                loc = pickUp;
             } else {
                 throw new Exception("Invalid input - Stack DNE, please try again");
             }
@@ -218,6 +218,23 @@ class GameManager {
         }
     }
 
+    public static void moveAll(PlayerMove move) throws Exception {
+        if (move.loc=="d"||move.loc=="discard") {
+            throw new Exception("Invalid input - cannot move all from discard pile, please try again");
+        }
+        try {Integer.parseInt(move.loc); Integer.parseInt(move.dest);}
+        catch (NumberFormatException e) {
+            throw new Exception("Invalid input - cannot move all to/from ace pile, please try again");
+        }
+        move(move); 
+        ArrayList<Card> tempList = new ArrayList<Card>();
+        for (Card card : stacks[Integer.parseInt(move.loc)-1]) {
+            if (card.isFaceUp) {tempList.add(card);}
+        }
+        stacks[Integer.parseInt(move.dest)-1].addAll(tempList);
+        stacks[Integer.parseInt(move.loc)-1].removeAll(tempList);    
+    }
+
     private static boolean sameCard(Card card1, Card card2) {
         return card1.rank == card2.rank && card1.suit == card2.suit;
     }
@@ -227,19 +244,38 @@ class GameManager {
         // for (int i = 0; i < deck.size(); i++) {
         //     System.out.println(deck.get(i).rank);
         // }
+        Scanner scanner = new Scanner(System.in);  
+        System.out.print("\033[H\033[2J");  
+        System.out.flush();   
+        System.out.println("Welcome to Console Solitaire!");
+        System.out.println("To draw a card, type 'draw card' or 'draw', followed by enter, or simply press enter.");
+        System.out.println("To move a card, type 'move' or 'm', followed by the stack number, a hyphen ('-') or 'to', and the destination stack number, followed by enter.");
+        System.out.println("To move all face-up cards, type 'move all' or 'a', followed by the stack number, a hyphen ('-') or 'to', and the destination stack number, followed by enter.");
+        System.out.println("Press enter to continue.");
+        scanner.nextLine();
         TextManager.initialize();
+        TextManager.printBoard();
+        System.out.println("These are the possible stack numbers and their locations. Press any key to continue.");
+        scanner.nextLine();
         dealCards();
         TextManager.loadAllStacks(stacks);
         TextManager.printBoard();
+        System.out.println("Let's play! Enter your move below.");
         PlayerMove move = null;
         while (true){
             move = null;
             try {move = userInput(); 
-                if (move.type == Input.DRAWING) {draw(); 
-                TextManager.loadSingleStack(discard); TextManager.printBoard();}
+                if (move.dest == "d" || move.dest=="discard") {
+                    throw new Exception("Invalid input - cannot move to discard pile, please try again");
+                }
+                if (move.type == Input.DRAWING) {
+                    draw(); TextManager.loadSingleStack(pickUp); 
+                    if (pile.size() < 3) {TextManager.loadPile(pile.size());}
+                }
                 else if (move.type == Input.MOVING) {move(move); 
-                    if (move.loc.equals("discard") || move.loc.equals("d")) {
-                        TextManager.loadSingleStack(discard);
+                    if (move.loc.equals("pick up") || move.loc.equals("p")) {
+                        TextManager.loadSingleStack(pickUp);
+                        TextManager.cleanStack(pickUp);
                     } else {
                         stacks[Integer.parseInt(move.loc)-1].get(stacks[Integer.parseInt(move.loc)-1].size()-1).isFaceUp = true;
                         TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
@@ -250,13 +286,17 @@ class GameManager {
                     } else {
                         TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
                     }
-                    TextManager.printBoard();
+                } else if (move.type == Input.MOVING_ALL) {
+                    moveAll(move);
+                    stacks[Integer.parseInt(move.loc)-1].get(stacks[Integer.parseInt(move.loc)-1].size()-1).isFaceUp = true;
+                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
+                    TextManager.cleanStack(stacks[Integer.parseInt(move.loc)-1]);
+                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
                 }
+                TextManager.printBoard();
                 System.out.println(move.toString());
             }
             catch (Exception e) {e.printStackTrace();}
-        
-            //TODO: Implement display for last 3 cards in pile\discard
         }
     }
 }
