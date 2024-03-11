@@ -155,16 +155,13 @@ class TextManager {
             }
         }
     }
-    public static void cleanStack(ArrayList<Card> stack) {
+    public static void cleanStack(ArrayList<Card> stack, int sizeDiff) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
-        for (int k = 0; k < Card.height; k++) {
-            int CARD_START = k + ((stack.size()==0)?0:(stack.size()-1)*2)+Card.height;//- ((i==7&&stack.size()<3)?5:0);
-            try {board[CARD_START]=board[CARD_START];}
-            catch (ArrayIndexOutOfBoundsException e) {break;}
-            board[CARD_START] = 
-            board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-            +"       "+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-            board[CARD_START].length());
+        int initialLine = ((stack.size()==0)?(stack.size()-1)*2:0)+Card.width;
+        for (int j = initialLine; j < initialLine+sizeDiff*2; j++) {
+            board[j] = board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
+            +"       "+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+            board[j].length());
         }
     }
     private static String[] getDesign(Card card) {
@@ -184,7 +181,7 @@ class TextManager {
                 suitDesign = diamonds;
                 break;
         }
-        int ordinal = card.rank.ordinal();
+        int ordinal = (card.rank == Rank.Ace)?12:card.rank.ordinal()-1;
         for (int line = 0; line < Card.height; line++) {
             returnee[line] = suitDesign[line].substring(ordinal*(Card.width+STACK_SPACE)
                 ,ordinal*(Card.width+STACK_SPACE)+Card.width);

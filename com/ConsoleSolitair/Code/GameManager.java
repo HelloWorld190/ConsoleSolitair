@@ -41,15 +41,19 @@ class GameManager {
                     draw(); TextManager.loadSingleStack(pickUp); 
                     if (pile.size() < 3) {TextManager.loadPile(pile.size());}
                 }
-                else if (move.type == Input.MOVING) {move(move); 
+                else if (move.type == Input.MOVING) {
                     if (move.loc.equals("pick up") || move.loc.equals("p")) {
+                        int originalSize = pickUp.size();
+                        move(move); 
                         TextManager.loadSingleStack(pickUp);
-                        TextManager.cleanStack(pickUp);
+                        TextManager.cleanStack(pickUp,originalSize-pickUp.size());
                     } else {
                         ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+                        int originalSize = loc.size();
+                        move(move);
                         if (loc.size() != 0) loc.get(loc.size()-1).isFaceUp = true;
                         TextManager.loadSingleStack(loc);
-                        TextManager.cleanStack(loc);
+                        TextManager.cleanStack(loc,originalSize-loc.size());
                     }
                     if (move.dest.charAt(0) == 'a') {
                         TextManager.loadAcesStack();
@@ -57,17 +61,19 @@ class GameManager {
                         TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
                     }
                 } else if (move.type == Input.MOVING_ALL) {
-                    moveAll(move);
+                    
                     ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+                    int originalSize = loc.size();
+                    moveAll(move);
                     if (loc.size() !=0) loc.get(loc.size()-1).isFaceUp = true;
                     TextManager.loadSingleStack(loc);
-                    TextManager.cleanStack(loc);
+                    TextManager.cleanStack(loc,originalSize-loc.size());
                     TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
                 } else if (move.type==Input.SHUFFLING) {
                     shuffle();
                     TextManager.loadPile(pile.size());;
                     TextManager.loadSingleStack(pickUp);
-                    TextManager.cleanStack(pickUp);
+                    TextManager.cleanStack(pickUp,3);
                 }
                 TextManager.printBoard();
                 System.out.println(move.toString());
@@ -104,7 +110,7 @@ class GameManager {
         new Card(Rank.Jack,Suit.DIAMONDS),new Card(Rank.Queen,Suit.DIAMONDS),new Card(Rank.King,Suit.DIAMONDS),
         new Card(Rank.Ace,Suit.DIAMONDS)
     ));
-    public static ArrayList<Card> stack0 = new ArrayList<Card>();
+    public static ArrayList<Card> stack0 = new ArrayList<Card>(Arrays.asList(new Card(Rank.Two,Suit.DIAMONDS)));
     public static ArrayList<Card> stack1 = new ArrayList<Card>();
     public static ArrayList<Card> stack2 = new ArrayList<Card>();
     public static ArrayList<Card> stack3 = new ArrayList<Card>();

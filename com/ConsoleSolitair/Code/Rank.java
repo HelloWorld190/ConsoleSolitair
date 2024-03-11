@@ -1,5 +1,5 @@
 package com.ConsoleSolitair.Code;
 
 public enum Rank {
-    Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace
+    Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King
 }
