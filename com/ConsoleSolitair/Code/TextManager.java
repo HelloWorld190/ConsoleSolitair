@@ -10,8 +10,10 @@ class TextManager {
     // private static final String ANSI_WHITE = "\u001B[37m";
     private static final int STACK_START = 13;
     private static final int STACK_SPACE = 2;
+    private static int BOARD_SIZE = 24;
+    private static int MAX_CARDS = 10;
 
-    public static String[] board = new String[24];
+    public static String[] board = new String[BOARD_SIZE];
     public static String[] spades = new String[6];
     public static String[] clubs = new String[6];
     public static String[] hearts = new String[6];
@@ -71,63 +73,6 @@ class TextManager {
         }
     }
 
-    public static void loadAllStacks(ArrayList<Card>[] stacks) {
-        for (int i = 0; i < 6; i++) {
-            ArrayList<Card> currentStack = stacks[i];
-            if (currentStack.size() == 0) {
-                for (int j = 0; j < Card.height; j++) {
-                    board[j] = 
-                    board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-                    +emptyCard[j]+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                    board[j].length());
-                }
-            } else {
-                for (int j = 0; j < currentStack.size(); j++) {
-                    String[] design = getDesign(currentStack.get(j));
-                    if (currentStack.get(j).isFaceUp) {
-                        for (int k = 0; k < Card.height; k++) {
-                            int CARD_START = k + j*2;  
-                            switch (currentStack.get(j).suit) {
-                                case SPADES:
-                                    board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                    board[CARD_START].length());
-                                    break;
-                                case CLUBS:
-                                    board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                    board[CARD_START].length());
-                                    break;
-                                case HEARTS:
-                                    board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                    board[CARD_START].length());
-                                    break;
-                                case DIAMONDS:
-                                    board[CARD_START] = 
-                                    board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                    design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                    board[CARD_START].length());
-                                    break;
-                            }
-                        }
-                    } else {
-                        for (int k = 0; k < Card.height; k++) {
-                            int CARD_START = k + j*2;
-                            board[CARD_START] = 
-                            board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
-                            +hiddenCard[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                            board[CARD_START].length());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     public static void loadSingleStack(ArrayList<Card> stack) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
         stack = (i==7&&stack.size()>3)?new ArrayList<Card>(stack.subList(stack.size()-3, stack.size())):stack;
@@ -139,6 +84,7 @@ class TextManager {
                 board[j].length());
             }
         } else {
+            if (stack.size()>MAX_CARDS) {extendBoard();}
             for (int j = 0; j < stack.size(); j++) {
                 String[] design = getDesign(stack.get(j));
                 if (stack.get(j).isFaceUp) {
@@ -183,6 +129,20 @@ class TextManager {
             }
         }
     }
+
+    public static void extendBoard() {
+        BOARD_SIZE += 2;
+        MAX_CARDS += 1;
+        String[] newBoard = new String[BOARD_SIZE];
+        for (int i = 0; i < board.length; i++) {
+            newBoard[i] = board[i];
+        }
+        for (int i = board.length; i < newBoard.length; i++) {
+            newBoard[i] = "                                                                   ";
+        }
+        board = newBoard;
+    }
+
     public static void loadAcesStack() {
         for (int i = 0; i < GameManager.acePiles.length; i++) {
             if (GameManager.acePiles[i]==null) {continue;}

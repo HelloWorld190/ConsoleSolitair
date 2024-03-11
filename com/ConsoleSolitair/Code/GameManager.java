@@ -24,15 +24,18 @@ class GameManager {
         System.out.println("These are the possible stack numbers and their locations. Press any key to continue.");
         scanner.nextLine();
         dealCards();
-        TextManager.loadAllStacks(stacks);
+        for (ArrayList<Card> stack : stacks) {
+            TextManager.loadSingleStack(stack);
+        }
+        TextManager.loadSingleStack(pickUp);
         TextManager.printBoard();
         System.out.println("Let's play! Enter your move below.");
         PlayerMove move = null;
         while (true){
             move = null;
             try {move = userInput(); 
-                if (move.dest == "d" || move.dest=="discard") {
-                    throw new Exception("Invalid input - cannot move to discard pile, please try again");
+                if (move.dest == "p" || move.dest=="pick up") {
+                    throw new Exception("Invalid input - cannot move to pick up pile, please try again");
                 }
                 if (move.type == Input.DRAWING) {
                     draw(); TextManager.loadSingleStack(pickUp); 
@@ -70,6 +73,13 @@ class GameManager {
                 System.out.println(move.toString());
             }
             catch (Exception e) {e.printStackTrace();}
+            for (Rank rank : acePiles) {
+                if (rank != Rank.King) {
+                    break;
+                }
+               System.out.println("Congratulations! You've won!");
+                return;
+            }
         }
     }
     static ArrayList<Card> deck = new ArrayList<Card>(Arrays.asList(
@@ -106,7 +116,6 @@ class GameManager {
     public static ArrayList<Card>[] stacks = new ArrayList[]{stack0,stack1,stack2,stack3,stack4,stack5};
     public static Rank[] acePiles = new Rank[] {null,null,null,null};
 
-    public static boolean gameOver = false;
     public enum Input {
         DRAWING, MOVING, MOVING_ALL, SHUFFLING
     }
