@@ -110,7 +110,7 @@ class GameManager {
         new Card(Rank.Jack,Suit.DIAMONDS),new Card(Rank.Queen,Suit.DIAMONDS),new Card(Rank.King,Suit.DIAMONDS),
         new Card(Rank.Ace,Suit.DIAMONDS)
     ));
-    public static ArrayList<Card> stack0 = new ArrayList<Card>(Arrays.asList(new Card(Rank.Two,Suit.DIAMONDS)));
+    public static ArrayList<Card> stack0 = new ArrayList<Card>();
     public static ArrayList<Card> stack1 = new ArrayList<Card>();
     public static ArrayList<Card> stack2 = new ArrayList<Card>();
     public static ArrayList<Card> stack3 = new ArrayList<Card>();

@@ -157,7 +157,7 @@ class TextManager {
     }
     public static void cleanStack(ArrayList<Card> stack, int sizeDiff) {
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
-        int initialLine = ((stack.size()==0)?(stack.size()-1)*2:0)+Card.width;
+        int initialLine = ((stack.size()!=0)?(((i==7&&stack.size()>3)?2:stack.size()-1)*2):0)+Card.height;
         for (int j = initialLine; j < initialLine+sizeDiff*2; j++) {
             board[j] = board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
             +"       "+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
