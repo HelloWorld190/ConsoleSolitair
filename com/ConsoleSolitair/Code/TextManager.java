@@ -84,7 +84,7 @@ class TextManager {
                 board[j].length());
             }
         } else {
-            if (stack.size()>MAX_CARDS) {extendBoard();}
+            while (stack.size()>MAX_CARDS) {extendBoard();}
             for (int j = 0; j < stack.size(); j++) {
                 String[] design = getDesign(stack.get(j));
                 if (stack.get(j).isFaceUp) {

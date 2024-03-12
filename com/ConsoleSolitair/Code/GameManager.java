@@ -4,7 +4,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 class GameManager {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Collections.shuffle(deck);
         // for (int i = 0; i < deck.size(); i++) {
         //     System.out.println(deck.get(i).rank);
@@ -61,9 +61,22 @@ class GameManager {
                         TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
                     }
                 } else if (move.type == Input.MOVING_ALL) {
-                    
                     ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
                     int originalSize = loc.size();
+                    while(true){
+                        System.out.print("Move how many cards? Type 'all' to move all face-up cards. ");
+                        String secondUserInput = scanner.nextLine();
+                        try {
+                            if (secondUserInput.equals("all")) {move.moveAmount=removeNonFaceUps(loc).size(); break;}
+                            move.moveAmount = Integer.parseInt(secondUserInput);
+                            if (move.moveAmount < 1 || move.moveAmount > removeNonFaceUps(loc).size()) {
+                                throw new Exception("Invalid input - please enter a number between 1 and "+removeNonFaceUps(loc).size());
+                            }
+                            break;
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
                     moveAll(move);
                     if (loc.size() !=0) loc.get(loc.size()-1).isFaceUp = true;
                     TextManager.loadSingleStack(loc);
@@ -73,17 +86,23 @@ class GameManager {
                     shuffle();
                     TextManager.loadPile(pile.size());;
                     TextManager.loadSingleStack(pickUp);
-                    TextManager.cleanStack(pickUp,3);
+                    TextManager.cleanStack(pickUp,2);
                 }
                 TextManager.printBoard();
                 System.out.println(move.toString());
             }
-            catch (Exception e) {e.printStackTrace();}
+            catch (ArrayIndexOutOfBoundsException e) {
+                throw new Exception("Fatal Exception: String Processing Failed");
+            }
+            catch (IndexOutOfBoundsException e) {
+                throw new Exception("Fatal Exception: String Processing Failed");
+            }
+            catch (Exception e) {if (e.getMessage()!="hide"){System.out.println(e.getMessage());}} //TODO: Debug purposes, change to e.getMessage()
             for (Rank rank : acePiles) {
                 if (rank != Rank.King) {
                     break;
                 }
-               System.out.println("Congratulations! You've won!");
+                System.out.println("Congratulations! You've won!");
                 return;
             }
         }
@@ -129,14 +148,18 @@ class GameManager {
         public Input type; 
         public String loc;
         public String dest;
+        
         public Card card;
+        public int moveAmount;
         public PlayerMove(Input type, String loc, String dest) {
             this.type = type; this.loc = loc; this.dest = dest;}
         public String toString() {
-            return type.name()+" "+((type==Input.DRAWING)? "a card" : 
-            ((type==Input.SHUFFLING)? "the pickup pile" :
-                ((type==Input.MOVING_ALL)?"of stack " + loc:
-                card.rank.name() + " of "+card.suit.name())+" to stack "+dest));
+            return ((type==Input.MOVING_ALL)?"MOVING":type.name())
+            +" "+
+            ((type==Input.DRAWING) ? "a card" : 
+            ((type==Input.SHUFFLING) ? "the pickup pile" :
+            ((type==Input.MOVING_ALL) ? moveAmount + " card(s) from stack " + loc :
+            card.rank.name() + " of "+card.suit.name())+" to stack "+dest));
         }
     }
     public static void dealCards() {
@@ -184,7 +207,14 @@ class GameManager {
 
     public static void draw() throws Exception {
         if (pile.size() == 0) {
-            throw new Exception("No cards left to draw");
+            shuffle();
+            TextManager.loadPile(pile.size());;
+            TextManager.loadSingleStack(pickUp);
+            TextManager.cleanStack(pickUp,2);
+            System.out.println("No cards left to draw - shuffling pile");
+            Thread.sleep(1000);
+            TextManager.printBoard();
+            throw new Exception("hide");
         }
         pickUp.add(pile.get(pile.size()-1));
         pickUp.get(pickUp.size()-1).isFaceUp = true;
@@ -198,7 +228,7 @@ class GameManager {
             if (move.loc.equals("pick up") || move.loc.equals("p")) {
                 loc = pickUp;
             } else {
-                throw new Exception("Invalid input - Stack DNE, please try again");
+                throw new Exception("Invalid input - Stack Does Not Exist, please try again");
             }
         }
         try {dest = stacks[Integer.parseInt(move.dest)-1];}
@@ -206,7 +236,7 @@ class GameManager {
             if (move.dest.charAt(0) == 'a') {
                 isAcePile = true;
             } else {
-                throw new Exception("Invalid input - Stack DNE, please try again");
+                throw new Exception("Invalid input - Stack Does Not Exist, please try again");
             }
         }
         if (loc.size() == 0) {
@@ -215,7 +245,7 @@ class GameManager {
         if (isAcePile) {
             int pile = 0;
             try {pile=Integer.parseInt(move.dest.substring(1,2))-1;
-            if (pile < 0 || pile > 4) {throw new Exception();} 
+            if (pile < 0 || pile > 4) {throw new Exception("Fatal Error: Invalid Ace Pile");} 
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new Exception("Invalid input - Ace pile DNE, please try again");}
@@ -303,21 +333,18 @@ class GameManager {
             }
         }
     }
-    //TODO: Make sure moveAll checks for the bottom-most face-up card, not the top-most
     public static void moveAll(PlayerMove move) throws Exception {
         if (move.loc=="p"||move.loc=="pick up") {
             throw new Exception("Invalid input - cannot move all from discard pile, please try again");
         } else if (move.loc.charAt(0) == 'a' || move.dest.charAt(0) == 'a') {
             throw new Exception("Invalid input - cannot move all to or from ace pile, please try again");
         } 
-        ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+        ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1]; 
         ArrayList<Card> dest = stacks[Integer.parseInt(move.dest)-1];
-        ArrayList<Card> temp = new ArrayList<Card>();
-        for (Card card : loc) {
-            if (card.isFaceUp) {
-                temp.add(card);
-            }
-        }
+        ArrayList<Card> temp = removeNonFaceUps(loc);
+
+        temp = new ArrayList<Card>(temp.subList(temp.size()-move.moveAmount,temp.size()));
+
         if (dest.size() == 0) {
             if (temp.get(0).rank == Rank.King) {
                 dest.addAll(temp);
@@ -392,5 +419,13 @@ class GameManager {
         return card1.rank == card2.rank && card1.suit == card2.suit;
     }
 
-    
+    private static ArrayList<Card> removeNonFaceUps(ArrayList<Card> input) {
+        ArrayList<Card> returnee = new ArrayList<Card>();
+        for (Card card : input) {
+            if (card.isFaceUp) {
+                returnee.add(card);
+            }
+        }
+        return returnee;
+    }
 }
