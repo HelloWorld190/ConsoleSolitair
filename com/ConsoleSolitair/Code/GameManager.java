@@ -20,6 +20,7 @@ class GameManager {
         System.out.println("To move a card, type 'move' or 'm', followed by the stack number, a hyphen ('-') or 'to', and the destination stack number, followed by enter.");
         System.out.println("To move all face-up cards, type 'move all' or 'a', followed by the stack number, a hyphen ('-') or 'to', and the destination stack number, followed by enter.");
         System.out.println("To shuffle the pickup pile back to the pile, type 'shuffle' or 's', followed by enter.");
+        System.out.println("To undo the last move, type 'undo' or 'u', followed by enter.");
         System.out.println("Press enter to continue.");
         scanner.nextLine();
         TextManager.initialize();
@@ -125,7 +126,7 @@ class GameManager {
     public static ArrayList<PlayerMove> moveList = new ArrayList<PlayerMove>();
 
     public enum Input {
-        DRAWING, MOVING, MOVING_ALL, SHUFFLING
+        DRAWING, MOVING, MOVING_ALL, SHUFFLING, UNDOING
     }
     public static class PlayerMove {
         public Input type; 
@@ -140,9 +141,10 @@ class GameManager {
             return ((type==Input.MOVING_ALL)?"MOVING":type.name())
             +" "+
             ((type==Input.DRAWING) ? "a card" : 
+            ((type==Input.UNDOING) ? "the last move" :
             ((type==Input.SHUFFLING) ? "the pickup pile" :
             ((type==Input.MOVING_ALL) ? moveAmount + " card(s) from stack " + loc :
-            card.rank.name() + " of "+card.suit.name())+" to stack "+dest));
+            card.rank.name() + " of "+card.suit.name())+" to stack "+dest)));
         }
     }
     public static void dealCards() {
@@ -182,6 +184,8 @@ class GameManager {
             }
         } else if (userInput.equals("shuffle") || userInput.equals("s")) {
             return new PlayerMove(Input.SHUFFLING, null, null);
+        } else if (userInput.equals("undo") || userInput.equals("u")) {
+            return new PlayerMove(Input.UNDOING, null, null);
         } 
         throw new Exception("Invalid input, please try again");
     }
@@ -325,10 +329,17 @@ class GameManager {
             throw new Exception("Invalid input - cannot move all from discard pile, please try again");
         } else if (move.loc.charAt(0) == 'a' || move.dest.charAt(0) == 'a') {
             throw new Exception("Invalid input - cannot move all to or from ace pile, please try again");
-        } 
-        ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1]; 
-        ArrayList<Card> dest = stacks[Integer.parseInt(move.dest)-1];
-        ArrayList<Card> temp = removeNonFaceUps(loc);
+        }
+        ArrayList<Card> loc,dest,temp;
+        try {
+            loc = stacks[Integer.parseInt(move.loc)-1]; 
+            dest = stacks[Integer.parseInt(move.dest)-1];
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid input - Stack Does Not Exist, please try again");
+        } catch (IndexOutOfBoundsException e) {
+            throw new Exception("Invalid input - Stack Does Not Exist, please try again");
+        }
+        temp = removeNonFaceUps(loc);
 
         temp = new ArrayList<Card>(temp.subList(temp.size()-move.moveAmount,temp.size()));
 
@@ -402,6 +413,59 @@ class GameManager {
         pickUp.clear();
     }
 
+    public static void undo() throws Exception{
+        if (moveList.size() == 0) {
+            throw new Exception("Invalid input - no moves to undo, please try again");
+        }
+        PlayerMove move = moveList.get(moveList.size()-1);
+        if (move.type == Input.DRAWING) {
+            pile.add(pickUp.get(pickUp.size()-1));
+            pickUp.remove(pickUp.size()-1);
+            TextManager.loadPile(pile.size());
+            TextManager.loadSingleStack(pickUp);
+            TextManager.cleanStack(pickUp,1);
+        } else if (move.type == Input.MOVING) {
+            // if (move.loc.equals("pick up") || move.loc.equals("p")) {
+            if (move.dest.charAt(0) == 'a') {
+                int destNum = Integer.parseInt(move.dest.substring(1,2))-1;
+                if (move.card.rank != acePiles[destNum]) {
+                    throw new Exception("Fatal Error: Card Mismatch");
+                }
+                if (acePiles[destNum] == Rank.Ace) {acePiles[destNum] = null;} 
+                else {
+                    int currentOrdinal = acePiles[destNum].ordinal();
+                    acePiles[destNum] = Rank.values()[currentOrdinal-1];
+                }
+                if (move.loc.equals("p") || move.loc.equals("pick up")){
+                    pickUp.add(move.card);
+                    TextManager.loadSingleStack(pickUp);
+                    TextManager.loadAcesStack();
+                } else {
+                    stacks[Integer.parseInt(move.loc)-1].add(move.card);
+                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
+                    TextManager.loadAcesStack();
+                }
+            } else {
+                int destNum = Integer.parseInt(move.dest.substring(1,2))-1;
+                int cardPos = stacks[destNum].size()-1;
+                if (move.card != stacks[destNum].get(cardPos)) {
+                    throw new Exception("Fatal Error: Card Mismatch");
+                }
+                stacks[destNum].remove(cardPos);
+                TextManager.loadSingleStack(stacks[destNum]);
+                if (move.loc.equals("p") || move.loc.equals("pick up")){
+                    pickUp.add(move.card);
+                    TextManager.loadSingleStack(pickUp);
+                } else {
+                    stacks[Integer.parseInt(move.loc)-1].add(move.card);
+                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
+                }
+            }
+        }
+        moveList.remove(moveList.size()-1);
+        //TODO: Implement undo for moving all, shuffle, and flipping faceUps
+    }
+
     private static void fulfillMove(PlayerMove move) throws Exception {
         try {
             if (move.dest == "p" || move.dest=="pick up") {
@@ -457,6 +521,8 @@ class GameManager {
                 TextManager.loadPile(pile.size());;
                 TextManager.loadSingleStack(pickUp);
                 TextManager.cleanStack(pickUp,2);
+            } else if (move.type==Input.UNDOING) {
+                undo();
             }
             moveList.add(move);
         }

@@ -20,6 +20,7 @@ class TextManager {
     public static String[] diamonds = new String[6];
     public static String[] emptyCard = new String[6];
     public static String[] hiddenCard = new String[6];
+    public static String[] nullCards = new String[6];
 
     public static void initialize() {
         Scanner scanner1 = null;
@@ -54,6 +55,10 @@ class TextManager {
             scanner2.nextLine();
             for (int j = 0; j < Card.height; j++) {
                 hiddenCard[j] = scanner2.nextLine();
+            }
+            scanner2.nextLine();
+            for (int j = 0; j < Card.height; j++) {
+                nullCards[j] = scanner2.nextLine();
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -145,13 +150,19 @@ class TextManager {
 
     public static void loadAcesStack() {
         for (int i = 0; i < GameManager.acePiles.length; i++) {
-            if (GameManager.acePiles[i]==null) {continue;}
-            else {
-                String[] design = getDesign(new Card(GameManager.acePiles[i],Suit.values()[i]));
-                for (int j = 0; j < Card.height; j++) {
-                    board[Card.height*i+j] = design[j] +
-                        board[Card.height*i+j].substring(Card.width);
+            String[] design = new String[6];
+            if (GameManager.acePiles[i]==null) {
+                int ordinal = i;
+                for (int line = 0; line < Card.height; line++) {
+                    design[line] = nullCards[line].substring(ordinal*(Card.width+STACK_SPACE)
+                    ,ordinal*(Card.width+STACK_SPACE)+Card.width);
                 }
+            } else {
+                design = getDesign(new Card(GameManager.acePiles[i],Suit.values()[i]));
+            }
+            for (int j = 0; j < Card.height; j++) {
+                board[Card.height*i+j] = design[j] +
+                    board[Card.height*i+j].substring(Card.width);
             }
         }
     }
