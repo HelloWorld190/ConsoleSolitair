@@ -25,32 +25,33 @@ class GameManager {
         scanner.nextLine();
         TextManager.initialize();
         TextManager.printBoard();
-        System.out.println("These are the possible stack numbers and their locations. Press input a seed or press enter to generate a new seed.");
-        String seedInput = scanner.nextLine();
+        System.out.println("These are the possible stack numbers and their locations. Please press enter to generate a new see or press any key to read the previous game's files.");
+        
+        File progress = new File("com/ConsoleSolitair/TextFiles/progress.txt");
         Random rand; long seed;
-        if (seedInput.equals("")) {
+        if (scanner.nextLine().equals("")) {
             rand = new Random();
-            seed = rand.nextInt(10000);
+            seed = rand.nextLong();
             System.out.println("Seed: "+seed);
             rand.setSeed(seed);
-            File progress = new File("com/ConsoleSolitair/TextFiles/progress.txt");
             progress.delete(); progress.createNewFile();
+            FileWriter seedWriter = new FileWriter(progress);
+            seedWriter.append(seed+"\n");
             Collections.shuffle(deck,rand);
             dealCards();
+            seedWriter.close();
         } else {
-            try {seed = Long.parseLong(seedInput);} 
-            catch (NumberFormatException e) {
-                throw new Exception("Invalid input - please enter a valid seed");
+            Scanner progressReader = new Scanner(progress);
+            if (progressReader.hasNext()) {seed = Long.parseLong(progressReader.nextLine());}
+            else {
+                progressReader.close(); 
+                throw new Exception("Seed does not exist in progress.txt");
             }
-            System.out.println("Seed: "+seedInput);
+            System.out.println("Seed: "+seed);
+            Thread.sleep(1000);
             rand = new Random(seed);
             Collections.shuffle(deck,rand);
             dealCards();
-            Thread.sleep(1000);
-            System.out.print("Reading Progress");
-            for (int i = 0; i < 3; i++) { System.out.print(".");Thread.sleep(500);}
-            System.out.println("");
-            Scanner progressReader = new Scanner(new File("com/ConsoleSolitair/TextFiles/progress.txt"));
             while (progressReader.hasNextLine()) {
                 String input = progressReader.nextLine();
                 if (input.equals("")) {break;}
@@ -59,7 +60,14 @@ class GameManager {
             }
             progressReader.close();
         }
+        System.out.print("\033[H\033[2J");  
+        System.out.flush();   
+        System.out.print("Loading game");
+        for (int i = 0; i < 3; i++) { System.out.print(".");Thread.sleep(500);}
+        System.out.println("");
         Thread.sleep(1000);
+        System.out.print("\033[H\033[2J");  
+        System.out.flush();
         for (ArrayList<Card> stack : stacks) {
             TextManager.loadSingleStack(stack);
         }
@@ -72,14 +80,20 @@ class GameManager {
             move = null;
             String input = scanner.nextLine();
             try {move = userInput(input);
-            fulfillMove(move); TextManager.printBoard();
+            fulfillMove(move); 
+            
+            System.out.print("\033[H\033[2J");  
+            System.out.flush();
+
+            TextManager.printBoard();
             System.out.println("Total Moves: "+moveList.size()+" | "+
             "Total Time: "+((int)System.currentTimeMillis()/1000-startTime)+"s | "+
             move.toString() + " | "+
             "Current Seed: "+seed);
+
             fileWriter.append(((input.equals(""))?"d":input)+"\n"); 
-            fileWriter.flush();}
-            catch (Exception e) {System.out.println(e.getMessage());}
+            fileWriter.flush();
+            } catch (Exception e) {System.out.println(e.getMessage());}
             for (Rank rank : acePiles) {
                 if (rank != Rank.King) {
                     break;
@@ -199,7 +213,9 @@ class GameManager {
             System.out.println("No cards left to draw - shuffling pile");
             Thread.sleep(1000);
             TextManager.printBoard();
-            throw new Exception("hide");
+            moveList.add(new PlayerMove(Input.SHUFFLING, null, null));
+            fileWriter.append("s\n"); fileWriter.flush();
+            return;
         }
         pickUp.add(pile.get(pile.size()-1));
         pickUp.get(pickUp.size()-1).isFaceUp = true;
@@ -461,9 +477,17 @@ class GameManager {
                     TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
                 }
             }
-        }
+        } else if (move.type == Input.SHUFFLING) {
+            Collections.reverse(pile);
+            pickUp.addAll(pile);
+            pile.clear();
+            TextManager.loadPile(pile.size());
+            TextManager.loadSingleStack(pickUp);
+        }// else if (move.type == Input.MOVING_ALL) {
+
+        // }
         moveList.remove(moveList.size()-1);
-        //TODO: Implement undo for moving all, shuffle, and flipping faceUps
+        //TODO: Implement undo for moving all and flipping faceUps
     }
 
     private static void fulfillMove(PlayerMove move) throws Exception {
@@ -532,7 +556,7 @@ class GameManager {
         catch (IndexOutOfBoundsException e) {
             throw new Exception("Fatal Exception: String Processing Failed");
         }
-        catch (Exception e) {if (e.getMessage()!="hide"){throw e;}} //TODO: Debug purposes, change to e.getMessage()
+        catch (Exception e) {throw e;} //TODO: Debug purposes, change to e.getMessage()
     }
 
     private static boolean sameCard(Card card1, Card card2) {
