@@ -25,7 +25,7 @@ class GameManager {
         scanner.nextLine();
         TextManager.initialize();
         TextManager.printBoard();
-        System.out.println("These are the possible stack numbers and their locations. Please press enter to generate a new see or press any key to read the previous game's files.");
+        System.out.println("These are the possible stack numbers and their locations. Please press enter to generate a new seed or press any key to read the previous game's files.");
         
         File progress = new File("com/ConsoleSolitair/TextFiles/progress.txt");
         Random rand; long seed;
@@ -149,6 +149,7 @@ class GameManager {
         
         public Card card;
         public int moveAmount;
+        public boolean wasCardFlipped;
         public PlayerMove(Input type, String loc, String dest) {
             this.type = type; this.loc = loc; this.dest = dest;}
         public String toString() {
@@ -433,7 +434,11 @@ class GameManager {
         if (moveList.size() == 0) {
             throw new Exception("Invalid input - no moves to undo, please try again");
         }
-        PlayerMove move = moveList.get(moveList.size()-1);
+        PlayerMove move = moveList.get(moveList.size()-1); int i=1;
+        while (move.type == Input.UNDOING) {
+            move = moveList.get(moveList.size()-i);
+            i++;
+        }
         if (move.type == Input.DRAWING) {
             pile.add(pickUp.get(pickUp.size()-1));
             pickUp.remove(pickUp.size()-1);
@@ -457,12 +462,16 @@ class GameManager {
                     TextManager.loadSingleStack(pickUp);
                     TextManager.loadAcesStack();
                 } else {
-                    stacks[Integer.parseInt(move.loc)-1].add(move.card);
-                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
+                    int locNum = Integer.parseInt(move.loc)-1;
+                    if (move.wasCardFlipped) {
+                        stacks[locNum].get(stacks[locNum].size()-1).isFaceUp = false;
+                    }
+                    stacks[locNum].add(move.card);
+                    TextManager.loadSingleStack(stacks[locNum]);
                     TextManager.loadAcesStack();
                 }
             } else {
-                int destNum = Integer.parseInt(move.dest.substring(1,2))-1;
+                int destNum = Integer.parseInt(move.dest)-1;
                 int cardPos = stacks[destNum].size()-1;
                 if (move.card != stacks[destNum].get(cardPos)) {
                     throw new Exception("Fatal Error: Card Mismatch");
@@ -473,8 +482,13 @@ class GameManager {
                     pickUp.add(move.card);
                     TextManager.loadSingleStack(pickUp);
                 } else {
-                    stacks[Integer.parseInt(move.loc)-1].add(move.card);
-                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.loc)-1]);
+                    int locNum = Integer.parseInt(move.loc)-1;
+                    if (move.wasCardFlipped) {
+                        stacks[locNum].get(stacks[locNum].size()-1).isFaceUp = false;
+                    }
+                    stacks[locNum].add(move.card);
+                    TextManager.loadSingleStack(stacks[locNum]);
+                    TextManager.cleanStack(stacks[Integer.parseInt(move.dest)-1], 1);
                 }
             }
         } else if (move.type == Input.SHUFFLING) {
@@ -483,11 +497,18 @@ class GameManager {
             pile.clear();
             TextManager.loadPile(pile.size());
             TextManager.loadSingleStack(pickUp);
-        }// else if (move.type == Input.MOVING_ALL) {
-
-        // }
+        } else if (move.type == Input.MOVING_ALL) {
+            ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)],
+            dest = stacks[Integer.parseInt(move.dest)],temp;
+            temp = new ArrayList<Card>(dest.subList(move.moveAmount, dest.size()-1));
+            if (move.wasCardFlipped) {
+                int locNum = Integer.parseInt(move.loc)-1;
+                stacks[locNum].get(stacks[locNum].size()-1).isFaceUp = false;
+            }
+            dest.removeAll(temp); loc.addAll(temp);
+        }
         moveList.remove(moveList.size()-1);
-        //TODO: Implement undo for moving all and flipping faceUps
+        //TODO: Implement undo for moving all, FIX ERROR FOR MOVING-ALL THAT ASKS FOR AMOUNT ON INIT
     }
 
     private static void fulfillMove(PlayerMove move) throws Exception {
@@ -509,7 +530,12 @@ class GameManager {
                     ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
                     int originalSize = loc.size();
                     move(move);
-                    if (loc.size() != 0) loc.get(loc.size()-1).isFaceUp = true;
+                    if (loc.size() != 0){
+                        if (loc.get(loc.size()-1).isFaceUp == false) {
+                            move.wasCardFlipped = true;
+                            loc.get(loc.size()-1).isFaceUp = true;
+                        }
+                    }
                     TextManager.loadSingleStack(loc);
                     TextManager.cleanStack(loc,originalSize-loc.size());
                 }
@@ -536,7 +562,12 @@ class GameManager {
                     }
                 }
                 moveAll(move);
-                if (loc.size() !=0) loc.get(loc.size()-1).isFaceUp = true;
+                if (loc.size() != 0){
+                    if (loc.get(loc.size()-1).isFaceUp == false) {
+                        move.wasCardFlipped = true;
+                        loc.get(loc.size()-1).isFaceUp = true;
+                    }
+                }
                 TextManager.loadSingleStack(loc);
                 TextManager.cleanStack(loc,originalSize-loc.size());
                 TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
