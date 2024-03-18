@@ -54,7 +54,7 @@ class GameManager {
             dealCards();
             while (progressReader.hasNextLine()) {
                 String input = progressReader.nextLine();
-                if (input.equals("")) {break;}
+                if (input.equals("")) {continue;}
                 PlayerMove move = userInput(input);
                 fulfillMove(move);
             }
@@ -91,7 +91,9 @@ class GameManager {
             move.toString() + " | "+
             "Current Seed: "+seed);
 
-            fileWriter.append(((input.equals(""))?"d":input)+"\n"); 
+            fileWriter.append((move.type==Input.MOVING_ALL)?"a"+move.loc+"-"+move.dest+" "+move.moveAllShorthand+"\n"
+            :((input.equals(""))?"d"
+            :input)+"\n"); 
             fileWriter.flush();
             } catch (Exception e) {System.out.println(e.getMessage());}
             for (Rank rank : acePiles) {
@@ -148,10 +150,15 @@ class GameManager {
         public String dest;
         
         public Card card;
+        public String moveAllShorthand;
         public int moveAmount;
         public boolean wasCardFlipped;
         public PlayerMove(Input type, String loc, String dest) {
             this.type = type; this.loc = loc; this.dest = dest;}
+        public PlayerMove(String loc, String dest, String moveAllShorthand) {
+            type = Input.MOVING_ALL;
+            this.loc = loc; this.dest = dest; this.moveAllShorthand = moveAllShorthand;
+        }
         public String toString() {
             return ((type==Input.MOVING_ALL)?"MOVING":type.name())
             +" "+
@@ -190,9 +197,17 @@ class GameManager {
             userInput=userInput.substring((userInput.contains("move all"))? 8 : 1);
             if (userInput.contains("to")) {
                 String[] split = userInput.split("to");
+                if (split[1].trim().length()>1) {
+                    String[] split2 = split[1].trim().split(" ");
+                    return new PlayerMove(split[0].trim(),split2[0],split2[1]);
+                }
                 return new PlayerMove(Input.MOVING_ALL, split[0].trim(), split[1].trim());
             } else if (userInput.contains("-")) {
                 String[] split = userInput.split("-");
+                if (split[1].trim().length()>1) {
+                    String[] split2 = split[1].trim().split(" ");
+                    return new PlayerMove(split[0].trim(),split2[0],split2[1]);
+                }
                 return new PlayerMove(Input.MOVING_ALL, split[0].trim(), split[1].trim());
             } else {
                 throw new Exception("Invalid input, please try again");
@@ -548,16 +563,19 @@ class GameManager {
                 ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
                 int originalSize = loc.size();
                 while(true){
+                    if (move.moveAllShorthand == null){ 
                     System.out.print("Move how many cards? Type 'all' to move all face-up cards. ");
-                    String secondUserInput = scanner.nextLine();
+                    move.moveAllShorthand = scanner.nextLine();
+                    }
                     try {
-                        if (secondUserInput.equals("all")) {move.moveAmount=removeNonFaceUps(loc).size(); break;}
-                        move.moveAmount = Integer.parseInt(secondUserInput);
+                        if (move.moveAllShorthand.equals("all")) {move.moveAmount=removeNonFaceUps(loc).size(); break;}
+                        move.moveAmount = Integer.parseInt(move.moveAllShorthand);
                         if (move.moveAmount < 1 || move.moveAmount > removeNonFaceUps(loc).size()) {
                             throw new Exception("Invalid input - please enter a number between 1 and "+removeNonFaceUps(loc).size());
                         }
                         break;
                     } catch (Exception e) {
+                        move.moveAllShorthand = null;
                         System.out.println(e.getMessage());
                     }
                 }
