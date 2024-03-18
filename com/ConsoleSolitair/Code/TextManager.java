@@ -79,6 +79,7 @@ class TextManager {
     }
 
     public static void loadSingleStack(ArrayList<Card> stack) {
+        //TODO: If two identical stacks exists, it will only load the first one
         int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
         stack = (i==7&&stack.size()>3)?new ArrayList<Card>(stack.subList(stack.size()-3, stack.size())):stack;
         if (stack.size() == 0) {

@@ -56,7 +56,9 @@ class GameManager {
                 String input = progressReader.nextLine();
                 if (input.equals("")) {continue;}
                 PlayerMove move = userInput(input);
-                fulfillMove(move);
+                try {fulfillMove(move);}
+                catch (Exception e) {System.out.println("Save File attempted an illegal move, please restart");
+                progressReader.close(); return;}
             }
             progressReader.close();
         }
@@ -523,7 +525,6 @@ class GameManager {
             dest.removeAll(temp); loc.addAll(temp);
         }
         moveList.remove(moveList.size()-1);
-        //TODO: Implement undo for moving all, FIX ERROR FOR MOVING-ALL THAT ASKS FOR AMOUNT ON INIT
     }
 
     private static void fulfillMove(PlayerMove move) throws Exception {
