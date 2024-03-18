@@ -78,10 +78,12 @@ class TextManager {
         }
     }
 
-    public static void loadSingleStack(ArrayList<Card> stack) {
+    public static void loadSingleStack(int i) {
         //TODO: If two identical stacks exists, it will only load the first one
-        int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
-        stack = (i==7&&stack.size()>3)?new ArrayList<Card>(stack.subList(stack.size()-3, stack.size())):stack;
+        ArrayList<Card> stack = (i!=7) ? GameManager.stacks[i] :
+            (GameManager.pickUp.size()<=3) ? GameManager.pickUp : 
+            new ArrayList<Card>(GameManager.pickUp.subList(
+                GameManager.pickUp.size()-3, GameManager.pickUp.size()));
         if (stack.size() == 0) {
             for (int j = 0; j < Card.height; j++) {
                 board[j] = 
@@ -167,9 +169,11 @@ class TextManager {
             }
         }
     }
-    public static void cleanStack(ArrayList<Card> stack, int sizeDiff) {
-        int i = Arrays.asList(GameManager.stacks).indexOf(stack); i=(i==-1)?7:i;
-        int initialLine = ((stack.size()!=0)?(((i==7&&stack.size()>3)?2:stack.size()-1)*2):0)+Card.height;
+    public static void cleanStack(int i, int sizeDiff) {
+        ArrayList<Card> stack = (i!=7) ? GameManager.stacks[i] : GameManager.pickUp;
+        int initialLine = (stack.size()==0) ? Card.height :
+            (i==7&&stack.size()>3) ? 2 :
+            ((stack.size()-1)*2);
         for (int j = initialLine; j < initialLine+sizeDiff*2; j++) {
             board[j] = board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
             +"       "+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,

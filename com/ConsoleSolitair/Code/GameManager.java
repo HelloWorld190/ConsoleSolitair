@@ -70,10 +70,10 @@ class GameManager {
         Thread.sleep(1000);
         System.out.print("\033[H\033[2J");  
         System.out.flush();
-        for (ArrayList<Card> stack : stacks) {
-            TextManager.loadSingleStack(stack);
+        for (int i=0; i<stacks.length;i++) {
+            TextManager.loadSingleStack(i);
         }
-        TextManager.loadSingleStack(pickUp);
+        TextManager.loadSingleStack(PICK_UP_INDEX);
         TextManager.printBoard();
         System.out.println("Let's play! Enter your move below.");
         int startTime = (int) System.currentTimeMillis()/1000;
@@ -137,7 +137,8 @@ class GameManager {
     public static ArrayList<Card> stack4 = new ArrayList<Card>();
     public static ArrayList<Card> stack5 = new ArrayList<Card>();
     public static ArrayList<Card> pile = new ArrayList<Card>();
-    public static ArrayList<Card> pickUp = new ArrayList<Card>();
+    public static ArrayList<Card> pickUp = new ArrayList<Card>(); 
+    private static int PICK_UP_INDEX = 7;
     @SuppressWarnings("unchecked")
     public static ArrayList<Card>[] stacks = new ArrayList[]{stack0,stack1,stack2,stack3,stack4,stack5};
     public static Rank[] acePiles = new Rank[] {null,null,null,null};
@@ -226,8 +227,8 @@ class GameManager {
         if (pile.size() == 0) {
             shuffle();
             TextManager.loadPile(pile.size());;
-            TextManager.loadSingleStack(pickUp);
-            TextManager.cleanStack(pickUp,2);
+            TextManager.loadSingleStack(PICK_UP_INDEX);
+            TextManager.cleanStack(PICK_UP_INDEX,2);
             System.out.println("No cards left to draw - shuffling pile");
             Thread.sleep(1000);
             TextManager.printBoard();
@@ -460,8 +461,8 @@ class GameManager {
             pile.add(pickUp.get(pickUp.size()-1));
             pickUp.remove(pickUp.size()-1);
             TextManager.loadPile(pile.size());
-            TextManager.loadSingleStack(pickUp);
-            TextManager.cleanStack(pickUp,1);
+            TextManager.loadSingleStack(PICK_UP_INDEX);
+            TextManager.cleanStack(PICK_UP_INDEX,1);
         } else if (move.type == Input.MOVING) {
             // if (move.loc.equals("pick up") || move.loc.equals("p")) {
             if (move.dest.charAt(0) == 'a') {
@@ -476,7 +477,7 @@ class GameManager {
                 }
                 if (move.loc.equals("p") || move.loc.equals("pick up")){
                     pickUp.add(move.card);
-                    TextManager.loadSingleStack(pickUp);
+                    TextManager.loadSingleStack(PICK_UP_INDEX);
                     TextManager.loadAcesStack();
                 } else {
                     int locNum = Integer.parseInt(move.loc)-1;
@@ -484,7 +485,7 @@ class GameManager {
                         stacks[locNum].get(stacks[locNum].size()-1).isFaceUp = false;
                     }
                     stacks[locNum].add(move.card);
-                    TextManager.loadSingleStack(stacks[locNum]);
+                    TextManager.loadSingleStack(locNum);
                     TextManager.loadAcesStack();
                 }
             } else {
@@ -494,18 +495,18 @@ class GameManager {
                     throw new Exception("Fatal Error: Card Mismatch");
                 }
                 stacks[destNum].remove(cardPos);
-                TextManager.loadSingleStack(stacks[destNum]);
+                TextManager.loadSingleStack(destNum);
                 if (move.loc.equals("p") || move.loc.equals("pick up")){
                     pickUp.add(move.card);
-                    TextManager.loadSingleStack(pickUp);
+                    TextManager.loadSingleStack(PICK_UP_INDEX);
                 } else {
                     int locNum = Integer.parseInt(move.loc)-1;
                     if (move.wasCardFlipped) {
                         stacks[locNum].get(stacks[locNum].size()-1).isFaceUp = false;
                     }
                     stacks[locNum].add(move.card);
-                    TextManager.loadSingleStack(stacks[locNum]);
-                    TextManager.cleanStack(stacks[Integer.parseInt(move.dest)-1], 1);
+                    TextManager.loadSingleStack(locNum);
+                    TextManager.cleanStack(Integer.parseInt(move.dest)-1, 1);
                 }
             }
         } else if (move.type == Input.SHUFFLING) {
@@ -513,7 +514,7 @@ class GameManager {
             pickUp.addAll(pile);
             pile.clear();
             TextManager.loadPile(pile.size());
-            TextManager.loadSingleStack(pickUp);
+            TextManager.loadSingleStack(PICK_UP_INDEX);
         } else if (move.type == Input.MOVING_ALL) {
             ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)],
             dest = stacks[Integer.parseInt(move.dest)],temp;
@@ -533,17 +534,18 @@ class GameManager {
                 throw new Exception("Invalid input - cannot move to pick up pile, please try again");
             }
             if (move.type == Input.DRAWING) {
-                draw(); TextManager.loadSingleStack(pickUp); 
+                draw(); TextManager.loadSingleStack(PICK_UP_INDEX); 
                 if (pile.size() < 3) {TextManager.loadPile(pile.size());}
             }
             else if (move.type == Input.MOVING) {
                 if (move.loc.equals("pick up") || move.loc.equals("p")) {
                     int originalSize = pickUp.size();
                     move(move); 
-                    TextManager.loadSingleStack(pickUp);
-                    TextManager.cleanStack(pickUp,originalSize-pickUp.size());
+                    TextManager.loadSingleStack(PICK_UP_INDEX);
+                    TextManager.cleanStack(PICK_UP_INDEX,originalSize-pickUp.size());
                 } else {
-                    ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+                    int locNum = Integer.parseInt(move.loc)-1;
+                    ArrayList<Card> loc = stacks[locNum];
                     int originalSize = loc.size();
                     move(move);
                     if (loc.size() != 0){
@@ -552,16 +554,17 @@ class GameManager {
                             loc.get(loc.size()-1).isFaceUp = true;
                         }
                     }
-                    TextManager.loadSingleStack(loc);
-                    TextManager.cleanStack(loc,originalSize-loc.size());
+                    TextManager.loadSingleStack(locNum);
+                    TextManager.cleanStack(locNum,originalSize-loc.size());
                 }
                 if (move.dest.charAt(0) == 'a') {
                     TextManager.loadAcesStack();
                 } else {
-                    TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
+                    TextManager.loadSingleStack(Integer.parseInt(move.dest)-1);
                 }
             } else if (move.type == Input.MOVING_ALL) {
-                ArrayList<Card> loc = stacks[Integer.parseInt(move.loc)-1];
+                int locNum = Integer.parseInt(move.loc)-1;
+                ArrayList<Card> loc = stacks[locNum];
                 int originalSize = loc.size();
                 while(true){
                     if (move.moveAllShorthand == null){ 
@@ -587,14 +590,14 @@ class GameManager {
                         loc.get(loc.size()-1).isFaceUp = true;
                     }
                 }
-                TextManager.loadSingleStack(loc);
-                TextManager.cleanStack(loc,originalSize-loc.size());
-                TextManager.loadSingleStack(stacks[Integer.parseInt(move.dest)-1]);
+                TextManager.loadSingleStack(locNum);
+                TextManager.cleanStack(locNum,originalSize-loc.size());
+                TextManager.loadSingleStack(Integer.parseInt(move.dest)-1);
             } else if (move.type==Input.SHUFFLING) {
                 shuffle();
                 TextManager.loadPile(pile.size());;
-                TextManager.loadSingleStack(pickUp);
-                TextManager.cleanStack(pickUp,2);
+                TextManager.loadSingleStack(PICK_UP_INDEX);
+                TextManager.cleanStack(PICK_UP_INDEX,2);
             } else if (move.type==Input.UNDOING) {
                 undo();
             }
