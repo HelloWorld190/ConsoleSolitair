@@ -98,32 +98,10 @@ class TextManager {
                 if (stack.get(j).isFaceUp) {
                     for (int k = 0; k < Card.height; k++) {
                         int CARD_START = k + j*2;  
-                        switch (stack.get(j).suit) {
-                            case SPADES:
-                                board[CARD_START] = 
-                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                board[CARD_START].length());
-                                break;
-                            case CLUBS:
-                                board[CARD_START] = 
-                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                board[CARD_START].length());
-                                break;
-                            case HEARTS:
-                                board[CARD_START] = 
-                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                board[CARD_START].length());
-                                break;
-                            case DIAMONDS:
-                                board[CARD_START] = 
-                                board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
-                                design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
-                                board[CARD_START].length());
-                                break;
-                        }
+                        board[CARD_START] = 
+                        board[CARD_START].substring(0, STACK_START + i*(STACK_SPACE+Card.width))+
+                        design[k]+board[CARD_START].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
+                        board[CARD_START].length());
                     }
                 } else {
                     for (int k = 0; k < Card.height; k++) {
@@ -173,7 +151,7 @@ class TextManager {
         //int initialLine = ((stack.size()!=0)?(((i==7&&stack.size()>3)?2:stack.size()-1)*2):0)+Card.height;
         ArrayList<Card> stack = (i!=7) ? GameManager.stacks[i] : GameManager.pickUp;
         int initialLine = (stack.size()==0) ? 0 :
-            (i==7&&stack.size()>3) ? 3 :
+            (i==7&&stack.size()>3) ? 4 :
             ((stack.size()-1)*2); initialLine += Card.height;
         for (int j = initialLine; j < initialLine+sizeDiff*2; j++) {
             board[j] = board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
