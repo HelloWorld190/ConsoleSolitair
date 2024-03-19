@@ -58,7 +58,7 @@ class GameManager {
                 PlayerMove move = userInput(input);
                 try {fulfillMove(move);}
                 catch (Exception e) {System.out.println("Save File attempted an illegal move, please restart");
-                progressReader.close(); return;}
+                progressReader.close(); e.printStackTrace();}
             }
             progressReader.close();
         }

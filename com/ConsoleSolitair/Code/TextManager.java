@@ -170,10 +170,11 @@ class TextManager {
         }
     }
     public static void cleanStack(int i, int sizeDiff) {
+        //int initialLine = ((stack.size()!=0)?(((i==7&&stack.size()>3)?2:stack.size()-1)*2):0)+Card.height;
         ArrayList<Card> stack = (i!=7) ? GameManager.stacks[i] : GameManager.pickUp;
-        int initialLine = (stack.size()==0) ? Card.height :
-            (i==7&&stack.size()>3) ? 2 :
-            ((stack.size()-1)*2);
+        int initialLine = (stack.size()==0) ? 0 :
+            (i==7&&stack.size()>3) ? 3 :
+            ((stack.size()-1)*2); initialLine += Card.height;
         for (int j = initialLine; j < initialLine+sizeDiff*2; j++) {
             board[j] = board[j].substring(0, STACK_START + i*(STACK_SPACE+Card.width))
             +"       "+board[j].substring(STACK_START + i*(STACK_SPACE+Card.width)+Card.width,
